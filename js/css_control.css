@@ -1,0 +1,32 @@
+div.radio-group {
+	margin-bottom: 40px;
+}
+div.radio-group input {
+	display: none;
+}
+div.radio-group label {
+	cursor: pointer;
+	padding: 5px 10px;
+	float: left;
+	border: solid 1px #aaa;
+	margin-left: -1px;
+	background: #eee;
+	background-image: linear-gradient(top, #F6F6F6, #ccc);
+	background-image: -ms-linear-gradient(top, #F6F6F6, #ccc);
+	background-image: -moz-linear-gradient(top, #F6F6F6, #ccc);
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#F6F6F6), to(#ccc));
+	-moz-box-shadow: 2px 2px 6px #ddd;
+	-webkit-box-shadow: 2px 2px 6px #ddd;
+	text-shadow: 1px 1px 0px #fff;
+}
+
+div.radio-group input:checked+label {
+	color: #fff;
+	background: #C3C3C3;
+	background-image: linear-gradient(top, #C3C3C3, #DBDBDB);
+	background-image: -ms-linear-gradient(top, #C3C3C3, #DBDBDB);
+	background-image: -moz-linear-gradient(top, #C3C3C3, #DBDBDB);
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#C3C3C3), to(#DBDBDB));
+	text-shadow: 0px 0px 0px #fff;
+}
+

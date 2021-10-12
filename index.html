@@ -1,0 +1,717 @@
+<HTML lang="ja">
+
+<HEAD>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+	<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+	<META HTTP-EQUIV="Content-Script-Type" CONTENT="text/javascript">
+	<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+	<META HTTP-EQUIV="EXPIRES" CONTENT="0">
+	<link rel="icon" href="favicon.ico" />
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<!-- <SCRIPT TYPE="text/javascript" SRC="js/jquery.js"></SCRIPT> -->
+	<SCRIPT TYPE="text/javascript" SRC="js/jquery-ui.js"></SCRIPT>
+	<link rel="stylesheet" type="text/css" href="js/jquery-ui.css" />
+	<link rel="stylesheet" type="text/css" href="js/css_control.css" />
+
+	<SCRIPT TYPE="text/javascript" SRC="js/js_svg_function.js"></SCRIPT>
+	<SCRIPT TYPE="text/javascript" SRC="js/js_color_list.js"></SCRIPT>
+
+	<link rel="stylesheet" type="text/css" href="lattice.css" />
+
+	<SCRIPT TYPE="text/javascript" SRC="js/js_gen_function.js"></SCRIPT>
+	<link rel="stylesheet" type="text/css" href="js/js_gen_function.css" />
+
+	<SCRIPT TYPE="text/javascript" SRC="statement.js"></SCRIPT>
+
+	<TITLE>Lattice MAX by Vivit</TITLE>
+
+	<SCRIPT TYPE="text/javascript">
+		//************************************************************************************************************
+		//
+		// FUNCTION		transparent 'rgba(0,0,0,0)' 		console.log(i+'/'+$d);
+		//************************************************************************************************************
+
+		const vivit = 'c27,0 55,0 82,0 51,137 103,275 154,412 52,-137 103,-275 155,-412 27,0 55,0 82,0 51,137 103,275 154,412 52,-137 103,-275 155,-412 139,0 279,0 418,0 0,9 0,19 0,28 -55,0 -109,0 -164,0 0,163 0,325 0,487 -30,0 -60,0 -90,0 0,-162 0,-324 0,-487 -46,0 -93,0 -139,0 -61,163 -122,325 -182,487 -14,0 -27,0 -41,0 -58,-156 -117,-311 -175,-467 -59,156 -117,311 -175,467 -14,0 -27,0 -41,0 -64,-172 -129,-343 -193,-515zm756 301c29,0 59,0 88,0 0,71 0,143 0,214 -29,0 -59,0 -88,0 0,-71 0,-143 0,-214zm44 -110c24,0 44,20 44,45 0,24 -20,44 -44,44 -25,0 -44,-20 -44,-44 0,-25 19,-45 44,-45zm-435 110c29,0 58,0 88,0 0,71 0,143 0,214 -30,0 -59,0 -88,0 0,-71 0,-143 0,-214zm44 -110c24,0 44,20 44,45 0,24 -20,44 -44,44 -25,0 -44,-20 -44,-44 0,-25 19,-45 44,-45z';
+
+		const IDX_X = 0; //SVG-X
+		const IDX_Y = 1; //SVG-Y
+		const IDX_PATH = 2; //SVG
+
+		const SVG_SIZE_W = 300;	//
+		const SVG_SIZE_H = 300;	//
+
+		const SVG_CANVAS1 = "svg_vanvas1";
+		const SVG_CANVAS2 = "svg_vanvas2";
+
+		var CANVAS = "#id_g_canvas";
+		var CANVAS1 = "#id_g_canvas1";
+		var CANVAS2 = "#id_g_canvas2";
+
+		const LineWCoef = 10;
+
+		//CELL
+
+		var CELL = new Array();
+
+		CELL['ST'] = new Array(2000, 2000);	//Straight
+		CELL['SQ'] = new Array(2000, 2000);	//Square
+		CELL['DT'] = new Array(2000, 2000);	//Dot
+		CELL['DM'] = new Array(4000, 2000);	//Diamond
+		CELL['HC'] = new Array(1730, 3000);	//Honeycomb
+		CELL['SG'] = new Array(1500, 2000);	//Seigaiha
+
+		const CELL_SIZE_X = 0;
+		const CELL_SIZE_Y = 1;
+
+		//SELECTED CATE & TYPE
+
+		var ID_ARR = new Array();
+		ID_ARR[1] = '';
+		ID_ARR[2] = '';
+
+		var ALPHA_ARR = new Array();
+		ALPHA_ARR[1] = 'S';
+		ALPHA_ARR[2] = 'M';
+		ALPHA_ARR[3] = 'L';
+
+		//COLORS
+
+		var color_switch_on = false;	//0:never
+		var color_switch_idx = 0;		//どの色を変えるか
+
+		var color_BG = 'WHITE';
+
+		var color_F1_fill = '#AAA';
+		var color_F1_line = '#333';
+		var color_F1_lineW = 1;		//線太さ(Idx)
+
+		var color_F2_fill = '#AAA';
+		var color_F2_line = '#333';
+		var color_F2_lineW = 1;		//線太さ(Idx)
+
+		var KUMIKO_ARR = new Array();
+
+		//■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+		//   MAIN
+		//■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+		$(function () {
+
+			//VIVIT
+			setPath('#id_svg_title', 'id_title_vivit_logo', '', 'M0 0' + vivit, 0, 'none', 'white');
+
+			$('#id_div_title_note').append("(" + (new Date()).getFullYear() + ")")
+
+			//------------------------------------------------
+			//	色セット
+			//------------------------------------------------
+			$("#sq_lineBG").css("background", color_BG);
+			$("#sq_fill1").css("background", color_F1_fill);
+			$("#sq_line1").css("background", color_F1_line);
+			$("#sq_fill2").css("background", color_F2_fill);
+			$("#sq_line2").css("background", color_F2_line);
+
+			//------------------------------------------------
+			//	SLIDER
+			//------------------------------------------------
+			$("#slider_zoom1").slider({ value: 3, min: 1, max: 5, step: 1 });	//ズーム
+			$("#slider_rotate1").slider({ value: 0, min: 0, max: 3, step: 1 });	//回転
+			$("#slider1_t").slider({ value: 1, min: 0, max: 4, step: 1 });	//KUMIKO1 線太さ
+			$("#slider1_s").slider({ value: 0, min: 0, max: 2, step: 1 });	//KUMIKO1 線影
+
+			$("#slider_zoom2").slider({ value: 3, min: 1, max: 5, step: 1 });	//ズーム
+			$("#slider_rotate2").slider({ value: 0, min: 0, max: 3, step: 1 });	//回転
+			$("#slider2_t").slider({ value: 1, min: 0, max: 4, step: 1 });	//KUMIKO1 線太さ
+			$("#slider2_s").slider({ value: 0, min: 0, max: 2, step: 1 });	//KUMIKO1 線影
+
+			// ズーム
+			$("#slider_zoom1").slider({ change: function (event, ui) { func_zoom(ui.value, "id_svg_canvas1"); } });
+			$("#slider_zoom2").slider({ change: function (event, ui) { func_zoom(ui.value, "id_svg_canvas2"); } });
+
+			// BASIC VIEWBOX:0 0 9000 9000
+			function func_zoom(val, target) {
+
+				//		var orig_x = -3000+((val-5)*(-1500)); var width =(val*3000); // working version
+				//		var orig_y = -3000+((val-5)*(-1500)); var height=(val*3000); // working version
+
+				var orig_x = -3000 + ((val - 5) * (-1500)); var width = (val * 3000);
+				var orig_y = -3000 + ((val - 5) * (-1500)); var height = (val * 3000);
+				document.getElementById(target).setAttribute("viewBox", orig_x + ' ' + orig_y + ' ' + width + ' ' + height);
+			}
+
+			function setFilterAttr(target, x, y, w, h) {
+				document.getElementById(target).setAttribute("x", x);
+				document.getElementById(target).setAttribute("y", y);
+				document.getElementById(target).setAttribute("width", w);
+				document.getElementById(target).setAttribute("height", h);
+			}
+
+			// 回転
+			$("#slider_rotate1").slider({ change: function (event, ui) { func_rotate(1, ui.value); } });
+			$("#slider_rotate2").slider({ change: function (event, ui) { func_rotate(2, ui.value); } });
+
+			function func_rotate(idx, val) {
+				document.getElementById("id_g_canvas" + idx).setAttribute("transform", 'rotate(' + (val * 45) + ',4500,4500)');
+			}
+
+			// 線太
+			$("#slider1_t").slider({ change: function (event, ui) { color_F1_lineW = func_lineWidth(1, ui.value); } });
+			$("#slider2_t").slider({ change: function (event, ui) { color_F2_lineW = func_lineWidth(2, ui.value); } });
+
+			function func_lineWidth(idx, val) {
+				var width = val;
+				$("#id_canvas_path" + idx).css({ "stroke-width": width * LineWCoef });
+				return width;
+			}
+
+			// 裏影
+			$("#slider1_s").slider({ change: function (event, ui) { func_shadow(1, ui.value); } });
+			$("#slider2_s").slider({ change: function (event, ui) { func_shadow(2, ui.value); } });
+
+			function func_shadow(idx, val) {
+				if (!val) $("#id_g_canvas" + idx).css({ "filter": "none" })
+				else $("#id_g_canvas" + idx).css({ "filter": "url(#filter" + val + ")" })
+			}
+
+			//------------------------------------------------
+			//	SAMPLE
+			//------------------------------------------------
+
+			xmlLoad();
+
+			// -------------------------------------------------
+			// SAMPLE XML 読み込み
+			// -------------------------------------------------
+			function xmlLoad() {
+				$.ajax({
+					url: 'parts.svg',
+					type: 'get',
+					dataType: 'xml',
+					timeout: 1000,
+					success: parse_xml
+				});
+			}
+
+			function parse_xml(xml, status) {
+				if (status != 'success') return;
+
+				$(xml).find('path').each(function () {
+					var id = $(this).attr("id");
+					var path = $(this).attr("d");
+					KUMIKO_ARR[id] = path;
+				});
+
+				for (i in KUMIKO_ARR) {
+
+					var tmp = i.split('_');
+					var cate = tmp[0];
+					var type = tmp[1];
+					var num = tmp[2];
+
+					if (type == 'NAME') { $("#id_div_sample").append('<div CLASS="class_samples_bar">' + num + '</div>'); }
+
+					if (num * 1 == 1) {
+
+						KUMIKO_ARR[i].match(/M(-?\d+) (-?\d+)(.+)/);
+						var svg_x = (RegExp.$1) * 1;
+						var svg_y = (RegExp.$2) * 1;
+						var svg_path = RegExp.$3;
+
+						var x_times = 3; var x = 0;
+						var y_times = 3; var y = 0;
+
+						if (cate != 'ET') { x = CELL[cate][CELL_SIZE_X]; y = CELL[cate][CELL_SIZE_Y]; }
+						else { x = tmp[3] * 10; y = tmp[4] * 10; }
+
+						var wh = x + (x / 4) * 2;	//x/4 はマージン
+						var start_x = x - (x / 4);
+
+						//				if((x*x_times)<(wh+1000)) x_times++;	//幅不足時には1追加
+						if ((y * y_times) < (wh + 1000)) y_times++;	//高さ不足時には1追加
+						var start_y = (y_times * y / 2) - (wh / 2);
+
+						var make_path = '';
+						for (j = 0; j < x_times; j++) {
+							for (k = 0; k < y_times; k++) {
+								make_path += 'M' + (svg_x + (x * j)) + ',' + (svg_y + (y * k)) + svg_path + ' ';
+							}
+						}
+
+						var box = start_x + ' ' + start_y + ' ' + wh + ' ' + wh;
+
+						$("#id_div_sample").append('<div CLASS="class_samples_div" ID="id_div_' + i + '" ></div>');
+						$('#id_div_' + i).append('<SVG CLASS="class_samples" ID="id_svg_' + i + '" WIDTH="60" HEIGHT="60" viewbox="' + box + '"/>');
+						$('#id_div_' + i).append('<div CLASS="class_sample_name">' + cate + ' ' + type + '</div>');
+
+						setPath('#id_svg_' + i, "id_path_" + i, "class_sample_svg", make_path, 0, 'BLACK', 'WHITE');
+					}
+				}
+
+				//------------------------------------------------
+				//	SAMPLE CLICK
+				//------------------------------------------------
+				$('.class_samples').on('click', function () {
+					drawCanvas($(this).attr("id"));
+				});
+
+			}
+
+			//------------------------------------------------
+			//	Draw Canvas
+			//------------------------------------------------
+			function drawCanvas(id) {
+
+				//console.log(id);
+
+				var CIdx = $('input[name=radioFB]:checked').val(); //Radio 値の取得
+				$(CANVAS + CIdx).children().remove();	//消去
+
+				if (!id) id = ID_ARR[CIdx]; if (!id) return;
+
+				const iMax = 23000;
+				const orig_x = -7000;
+				const orig_y = -7000;
+
+				var tmp = id.split('_');
+				var cate = tmp[2];
+				var type = tmp[3];
+				var num = tmp[4] * 1;
+
+				ID_ARR[CIdx] = id; //保存
+
+				var VariIdx = $('input[name=radioVARI]:checked').val();
+				var ARRIDX = cate + '_' + type + '_' + VariIdx;
+				if (cate == 'ET') ARRIDX += '_' + tmp[5] + '_' + tmp[6];
+
+				$("#id_layer_source_" + CIdx).html(cate + ':' + type + '[' + ALPHA_ARR[VariIdx] + ']');	//Source Name
+
+				(KUMIKO_ARR[ARRIDX]).match(/M(-?\d+) (-?\d+)(.+)/);
+				var svg_x = (RegExp.$1) * 1;
+				var svg_y = (RegExp.$2) * 1;
+				var svg_path = RegExp.$3;
+
+				var width = 0; var height = 0;
+				if (cate == 'ET') { width = tmp[5] * 10; height = tmp[6] * 10; }
+				else { width = CELL[cate][CELL_SIZE_X]; height = CELL[cate][CELL_SIZE_Y]; }
+
+				var x_times = Math.ceil(iMax / width);
+				var y_times = Math.ceil(iMax / height);
+
+				var make_path = '';
+				for (j = 0; j < x_times; j++) {
+					for (k = 0; k < y_times; k++) {
+						make_path += 'M' + (svg_x + (width * j) + orig_x) + ',' + (svg_y + (height * k) + orig_y) + svg_path + ' ';
+					}
+				}
+
+				make_path = 'M' + (orig_x) + ',' + (orig_y) + ' h' + iMax + ' v' + iMax + ' h-' + iMax + 'z ' + make_path;  //console.log(make_path);
+
+				var cLine = (CIdx == 1) ? color_F1_line : color_F2_line;		//線色
+				var cFill = (CIdx == 1) ? color_F1_fill : color_F2_fill;		//色
+				var cLineW = (CIdx == 1) ? color_F1_lineW : color_F2_lineW;	//線幅
+
+				setPath(CANVAS + CIdx, 'id_canvas_path' + CIdx, 'class_canvas_path', make_path, cLineW * LineWCoef, cLine, cFill);
+				//		setPath(CANVAS+CIdx,'','', 'M4400,4400 h200 v200 h-200z', 10, 'RED', 'none'); //中央点
+			}
+
+			//------------------------------------------------
+			//	3TYPE CLICK
+			//------------------------------------------------
+			$('input[name="radioVARI"]:radio').change(function () {
+				drawCanvas();
+			});
+
+			//------------------------------------------------
+			//	CLEAR
+			//------------------------------------------------
+			$('.cls_ctrl_clear').on('click', function () {
+				console.log('clicked');
+				var tmp = $(this).attr('ID').split("_");
+				var idx = tmp[3] * 1;
+				ID_ARR[idx] = '';
+				$('#id_g_canvas' + idx).children().remove();
+				$('#id_layer_source_' + idx).html('');
+			});
+
+			//------------------------------------------------
+			//	COLOR PICKER
+			//------------------------------------------------
+			$('.class_color_pick').on('click', function () {
+				var tmp = $(this).attr('ID').split("_");
+				color_switch_idx = tmp[3] * 1;
+				func_color_picker();
+			});
+
+			//------------------------------------------------
+			//	COLOR PICKER
+			//------------------------------------------------
+			function func_color_picker() {
+
+				var SCREEN = "id_screen";
+				var PCELL = "class_color_cell";
+				var PICKER = "id_color_picker";
+
+				if (!color_switch_on) {//Called Once Only
+					for (i = 0; i < ARR_COLOR.length - 1; i++) {
+						var COLOR = ARR_COLOR[i];
+						$('#' + PICKER).append('<div CLASS="' + PCELL + '" ID="' + PICKER + '_' + COLOR + '" STYLE="BACKGROUND:' + COLOR + '" />');
+					}
+					color_switch_on = true;
+				}
+
+				$("BODY").append('<div id="' + SCREEN + '" style="background-color:#FFF;opacity:0.1;" />');
+				$('#' + SCREEN).fadeIn("300");
+
+				//Dialog Centering
+				var w = $(window).width(); var cw = 500; // $("#id_color_picker").outerWidth({margin:true});
+				var h = $(window).height(); var ch = 300; // $("#id_color_picker").outerHeight({margin:true});
+				$('#' + PICKER).css({ "left": ((w - cw) / 2) + "px" });
+				$('#' + PICKER).css({ "top": ((h - ch) / 2) + "px" });
+				$('#' + PICKER).fadeIn();
+
+				//--------------------------
+				//  Click
+				//--------------------------
+				$('#' + SCREEN).on('click', function () { func_fadeOut(); }); //CLOSE
+
+				$('.' + PCELL).on('click', function () {
+					var tmp = $(this).attr('ID').split("_");
+					var color_name = tmp[3];
+
+					switch (color_switch_idx) {
+						case 0: $("#id_div_canvasBG").css({ "background": color_name }); color_BG = color_name; $("#sq_lineBG").css("background", color_name); break; //裏
+						case 11: $("#id_canvas_path1").css({ "fill": color_name }); color_F1_fill = color_name; $("#sq_fill1").css("background", color_name); break; //組子1塗
+						case 12: $("#id_canvas_path1").css({ "stroke": color_name }); color_F1_line = color_name; $("#sq_line1").css("background", color_name); break; //組子1線
+						case 21: $("#id_canvas_path2").css({ "fill": color_name }); color_F2_fill = color_name; $("#sq_fill2").css("background", color_name); break; //組子2塗
+						case 22: $("#id_canvas_path2").css({ "stroke": color_name }); color_F2_line = color_name; $("#sq_line2").css("background", color_name); break; //組子2線
+					}
+					func_fadeOut();
+				});
+
+				function func_fadeOut() {
+					$('#' + SCREEN + ',' + '#' + PICKER).fadeOut("100", function () { $('#' + SCREEN).remove(); });
+				}
+			}
+
+			//------------------------------------------------
+			//	トリセツ
+			//------------------------------------------------
+			$('#id_torisetu').on('click', function () {
+				quickDialog(700, 500, statement_lattice2);
+			});
+		});
+
+
+//************************************************************************************************************
+// END OF SCRIPT
+//************************************************************************************************************
+	</SCRIPT>
+
+	<style type="text/css">
+		#id_div_top {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			justify-content: space-between;
+			/* 左右 */
+			align-items: flex-end;
+			/* 上下 */
+			padding: 3px;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		.class_title_item {
+			padding: 0;
+			margin: 0 3px;
+			overflow: hidden;
+			color: white;
+			font-family: 'Times New Roman', Times, serif;
+		}
+
+		#id_div_title_Lattice {
+			font-size: 2.4rem;
+			flex-grow: 1;
+			line-height: 2.0rem;
+			margin-left: 10px;
+			font-family: serif;
+		}
+
+		#id_div_title_note {
+			font-size: 1rem;
+		}
+
+		/* --------------CSS 上書き-------------- */
+		#slider_zoom1 .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider_rotate1 .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider1_t .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider1_s .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider1_v .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider_zoom2 .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider_rotate2 .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider2_t .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider2_s .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		#slider2_v .ui-slider-handle {
+			width: 12px;
+			height: 12px;
+		}
+
+		/* --------------CSS 上書き-------------- */
+
+		@media print {
+
+			#id_div_title_note,
+			#id_div_control_waku,
+			#id_div_center_right,
+			#id_div_bottom,
+			#id_color_picker {
+				display: none;
+			}
+
+			#id_div_center,
+			#id_div_center_left,
+			#id_div_canvas_waku {
+				width: 100%;
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+
+			#id_div_center {
+				margin-top: 5rem;
+			}
+		}
+	</style>
+
+</HEAD>
+
+<BODY>
+
+	<!-- ■■■■■■ TITLE ■■■■■ -->
+
+	<div ID="id_div_top" style="height:40px; overflow:hidden;">
+		<SVG id="id_svg_title" x="0" y="0" width="70" height="30" viewbox="0 0 1600 60" preserveAspectRatio="xMinYMin meet">
+		</SVG>
+		<div CLASS="class_title_item" id="id_div_title_Lattice">
+			Lattice Max
+		</div>
+		<div CLASS="class_title_item" id="id_div_title_note">
+			Free Design Tools Presented By ViViT, All Rights Reserved
+		</div>
+	</div>
+
+	<div ID="id_div_center">
+
+		<div ID="id_div_control_waku" class="radio-group">
+
+			<!-- ■■■■■■ CONTROL 1 ■■■■■ -->
+
+			<div CLASS="class_div_control">
+				<div>
+					<input id="Radio1" type="radio" class="radio" name="radioFB" value="1" checked="checked" />
+					<label id="label_layer1" for="Radio1" STYLE="WIDTH:60px; text-align:center;">Layer 1</label>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Zoom</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider_zoom1'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Rotate</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider_rotate1'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Color</div>
+				<div CLASS="cls_ctrl_btn class_color_pick" ID="id_control_color_11">
+					Fill
+					<div CLASS="class_sq" ID="sq_fill1"></div>
+				</div>
+				<div CLASS="cls_ctrl_btn class_color_pick" ID="id_control_color_12">Line
+					<div CLASS="class_sq" ID="sq_line1"></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Line</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider1_t'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Shadow</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider1_s'></div>
+				</div>
+				<div CLASS="cls_ctrl_btn cls_ctrl_clear" ID="id_control_clear_1">Clear</div>
+			</div>
+
+			<!-- ■■■■■■ CONTROL 2 ■■■■■ -->
+
+			<div CLASS="class_div_control">
+				<div>
+					<input id="Radio2" type="radio" class="radio" name="radioFB" value="2" />
+					<label id="label_layer2" for="Radio2" STYLE="WIDTH:60px; text-align:center;">Layer 2</label>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Zoom</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider_zoom2'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Rotate</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider_rotate2'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Color</div>
+				<div CLASS="cls_ctrl_btn class_color_pick" ID="id_control_color_21">
+					Fill
+					<div CLASS="class_sq" ID="sq_fill2"></div>
+				</div>
+				<div CLASS="cls_ctrl_btn class_color_pick" ID="id_control_color_22">
+					Line
+					<div CLASS="class_sq" ID="sq_line2"></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Line</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider2_t'></div>
+				</div>
+				<div CLASS="cls_ctrl_ttl">Shadow</div>
+				<div CLASS="cls_ctrl">
+					<div CLASS="class_div_slider" id='slider2_s'></div>
+				</div>
+				<div CLASS="cls_ctrl_btn cls_ctrl_clear" ID="id_control_clear_2">Clear</div>
+			</div>
+
+			<!-- ■■■■■■ BACKGROUND ■■■■■ -->
+
+			<div CLASS="class_div_control">
+				<div CLASS="cls_ctrl_titleTop">Background</div>
+				<div CLASS="cls_ctrl_ttl">Color</div>
+				<div CLASS="cls_ctrl_btn class_color_pick" ID="id_control_color_0">Fill<div CLASS="class_sq" ID="sq_lineBG">
+					</div>
+				</div>
+				<div CLASS="cls_ctrl_ttl" ID='id_torisetu'>▼取り扱い説明書(簡易)</div>
+				<div CLASS="cls_ctrl_ttl" STYLE="float:right">L 1</div>
+				<div CLASS="class_layer_source" ID="id_layer_source_1"></div>
+				<div CLASS="cls_ctrl_ttl" STYLE="float:right">L 2</div>
+				<div CLASS="class_layer_source" ID="id_layer_source_2"></div>
+			</div>
+
+		</div>
+
+		<div ID="id_div_center_left">
+			<div ID="id_div_canvas_waku">
+
+				<!-- ■■■■■■ CANVAS BG ■■■■■ -->
+				<div ID="id_div_canvasBG" CLASS="class_div_canvas" STYLE="WIDTH:600; HEIGHT:600;"></div>
+
+				<!-- ■■■■■■ CANVAS 2 ■■■■■ -->
+				<div ID="id_div_canvas2" CLASS="class_div_canvas">
+					<SVG id="id_svg_canvas2" WIDTH="600" HEIGHT="600" VIEWBOX="0 0 9000 9000">
+						<g id="id_g_canvas2"></g>
+					</SVG>
+				</div>
+
+				<!-- ■■■■■■ CANVAS 1 ■■■■■  -->
+				<div ID="id_div_canvas1" CLASS="class_div_canvas">
+					<SVG id="id_svg_canvas1" WIDTH="600" HEIGHT="600" VIEWBOX="0 0 9000 9000">
+						<defs>
+							<filter id="filter1" filterUnits="userSpaceOnUse" x="-5000" y="-5000" width="19000" height="19000">
+								<feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur" />
+								<feOffset in="blur" dx="10" dy="10" result="offsetBlur" />
+								<feMerge>
+									<feMergeNode in="offsetBlur" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+							<filter id="filter2" filterUnits="userSpaceOnUse" x="-5000" y="-5000" width="19000" height="19000">
+								<feGaussianBlur in="SourceAlpha" stdDeviation="20" result="blur" />
+								<feOffset in="blur" dx="20" dy="20" result="offsetBlur" />
+								<feMerge>
+									<feMergeNode in="offsetBlur" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+						</defs>
+						<!-- ■■■■■■ Initial Text ■■■■■  -->
+						<g id="id_g_canvas1">
+							<text x="4500" y="3100" font-size="400" fill="#AAA" font-family="serif" text-anchor="middle">
+								Online DIY Design Tool with SVG
+							</text>
+							<text x="4500" y="4500" font-size="1500" fill="darkorange" font-family="serif" text-anchor="middle">
+								Lattice Max!
+							</text>
+							<text x="4500" y="5100" font-size="400" fill="#AAA" font-family="serif" text-anchor="middle">
+								Let's get started by clicking Showcase 👉
+							</text>
+							<text x="4500" y="8000" font-size="500" fill="#777" font-family="serif" text-anchor="middle">
+								Save with Chrome
+							</text>
+							<text x="4500" y="8600" font-size="500" fill="#777" font-family="serif" text-anchor="middle">
+								Edit with Adobe Illustrator!
+							</text>
+						</g>
+					</SVG>
+				</div>
+			</div>
+		</div>
+
+		<div ID="id_div_center_right">
+
+			<!-- ■■■■■■ OPTION(Right/left) ■■■■■ -->
+			<div class="radio-group" style="width:250px;">
+				<div>
+					<input id="RadioVari1" type="radio" class="radio" name="radioVARI" value="1" checked="checked" />
+					<label for="RadioVari1" STYLE="WIDTH:60px; text-align:center;">S</label>
+				</div>
+				<div>
+					<input id="RadioVari2" type="radio" class="radio" name="radioVARI" value="2" />
+					<label for="RadioVari2" STYLE="WIDTH:60px; text-align:center;">M</label>
+				</div>
+				<div>
+					<input id="RadioVari3" type="radio" class="radio" name="radioVARI" value="3" />
+					<label for="RadioVari3" STYLE="WIDTH:60px; text-align:center;">L</label>
+				</div>
+			</div>
+
+			<!-- ■■■■■■ SAMPLE ■■■■■ -->
+			<div ID="id_div_sample"></div>
+
+		</div>
+	</div>
+
+	<div id="id_div_bottom"></div>
+
+	<div ID="id_color_picker"></div>
+
+</BODY>
+
+</HTML>
