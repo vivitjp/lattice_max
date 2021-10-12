@@ -1,6 +1,6 @@
 # Lattice Max
 
-## https://vivitjp.github.io/lattice_max/
+### https://vivitjp.github.io/lattice_max/
 
 ## What is this?
 
